@@ -1,0 +1,64 @@
+name: MediMate Medicine Reminder Background Scheduler
+
+on:
+  schedule:
+    # Trigger every 10 minutes (cron syntax: minute hour day-of-month month day-of-week)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    # Allow manual execution from GitHub Actions dashboard
+
+jobs:
+  run-scheduler:
+    name: Trigger Push Reminder Sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Verify Configuration & Trigger Push Scheduler
+        env:
+          APP_URL: ${{ secrets.MEDIMATE_APP_URL }}
+          CRON_SECRET: ${{ secrets.MEDIMATE_CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ]; then
+            echo "::error::Secret MEDIMATE_APP_URL is not configured in GitHub Secrets."
+            echo "Please configure MEDIMATE_APP_URL in Repository Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Secret MEDIMATE_CRON_SECRET is not configured in GitHub Secrets."
+            echo "Please configure MEDIMATE_CRON_SECRET matching CRON_SECRET on your Render deployment."
+            exit 1
+          fi
+
+          # Strip trailing slash from APP_URL if present
+          CLEAN_APP_URL="${APP_URL%/}"
+
+          echo "Executing scheduled medicine reminder check on: $CLEAN_APP_URL"
+          
+          # Allow up to 120s for Render cold boot and retry on transient network drops
+          RESPONSE=$(curl -s -S \
+            --max-time 120 \
+            --connect-timeout 60 \
+            --retry 2 \
+            --retry-delay 5 \
+            --retry-connrefused \
+            -w "\n%{http_code}" \
+            -X POST "$CLEAN_APP_URL/api/notifications/scheduler/run" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "x-cron-secret: $CRON_SECRET")
+          
+          HTTP_BODY=$(echo "$RESPONSE" | sed '$d')
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+
+          echo "Response HTTP Code: $HTTP_CODE"
+          echo "Response Body: $HTTP_BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Successfully ran MediMate notification scheduler."
+            exit 0
+          else
+            echo "Scheduler trigger returned non-2xx status code: $HTTP_CODE"
+            exit 1
+          fi

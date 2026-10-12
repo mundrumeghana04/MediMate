@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MediMate - Your personal healthcare companion. Keep track of your medicines, schedules, and health records in one calm, simple place.">
+  <title>MediMate — Your Personal Healthcare Companion</title>
+
+  <!-- Favicon using official brand logo -->
+  <link rel="icon" type="image/jpeg" href="/assets/medimate-logo.jpg">
+
+  <!-- Core Accessible Stylesheet -->
+  <link rel="stylesheet" href="/css/styles.css">
+
+  <!-- Immediate Theme Initializer (prevents theme flash) -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('medimate_theme');
+        if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- Accessible Skip Link for Keyboard & Screen Reader Users -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Top Site Header & Navigation (Public View Only) -->
+  <header class="site-header public-header" id="publicSiteHeader" role="banner">
+    <div class="header-container">
+      <a href="/" class="brand-wrapper" id="brandHomeLink" aria-label="MediMate Homepage" data-route="/">
+        <img 
+          src="/assets/medimate-logo.jpg" 
+          alt="MediMate official logo: heart shaped hand holding a medicine capsule and clock" 
+          class="brand-logo"
+          width="52" 
+          height="52"
+        >
+        <div class="brand-title-group">
+          <span class="brand-name">Medi<span>Mate</span></span>
+          <span class="brand-tagline">Your personal healthcare companion</span>
+        </div>
+      </a>
+
+      <!-- Mobile Navigation Hamburger Button for Public Visitors -->
+      <button 
+        type="button" 
+        class="mobile-menu-btn" 
+        id="publicMobileMenuToggle" 
+        aria-label="Toggle navigation menu" 
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+      <!-- Public Navigation Container -->
+      <nav class="nav-collapse" id="publicNavCollapse" aria-label="Main Navigation">
+        <div class="nav-links-group" id="publicNavLinksGroup">
+          <a href="/" class="nav-link active" data-route="/">Home</a>
+          <a href="#featuresHeading" class="nav-link">Features</a>
+        </div>
+        <div class="nav-auth-group" id="publicNavAuthGroup">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnNavSignIn">
+            Sign In
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" id="btnNavSignUp">
+            Create Account
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Left Sidebar Navigation (Authenticated Interface Only) -->
+  <aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Main Application Navigation" style="display: none;">
+    <div class="sidebar-header">
+      <a href="/dashboard" class="sidebar-brand" data-route="/dashboard" aria-label="MediMate Dashboard">
+        <img 
+          src="/assets/medimate-logo.jpg" 
+          alt="MediMate official logo: heart shaped hand holding a medicine capsule and clock" 
+          class="sidebar-logo"
+          width="44" 
+          height="44"
+        >
+        <div class="sidebar-brand-text">
+          <span class="sidebar-brand-name">Medi<span>Mate</span></span>
+          <span class="sidebar-brand-tagline">Healthcare Companion</span>
+        </div>
+      </a>
+      <button type="button" class="sidebar-close-btn" id="btnCloseSidebar" aria-label="Close navigation sidebar">✕</button>
+    </div>
+
+    <!-- Sidebar Quick Controls: Theme & Reminders -->
+    <div class="sidebar-controls-row">
+      <button type="button" class="sidebar-icon-btn" id="btnSidebarThemeToggle" aria-label="Switch between light and dark theme">
+        <span class="theme-toggle-icon" id="sidebarThemeIcon" aria-hidden="true">
+          <svg class="icon-svg moon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </span>
+        <span class="sidebar-control-label" id="sidebarThemeLabel">Dark Mode</span>
+      </button>
+
+      <button type="button" class="sidebar-icon-btn" id="btnSidebarNotifications" aria-label="Medicine Reminders">
+        <span class="bell-icon" aria-hidden="true">
+          <svg class="icon-svg bell-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </span>
+        <span class="notification-badge" id="sidebarNotifBadge" style="display: none;"></span>
+        <span class="sidebar-control-label">Reminders</span>
+      </button>
+    </div>
+
+    <!-- Authenticated Navigation Destinations (Role-Aware) -->
+    <nav class="sidebar-nav" id="sidebarNav" aria-label="Main Application Navigation">
+      <!-- Patient-Only Navigation Group -->
+      <div id="patientNavGroup" class="nav-role-group">
+        <a href="/dashboard" class="sidebar-nav-item active" data-route="/dashboard">
+          <span class="sidebar-nav-icon" aria-hidden="true">📊</span>
+          <span class="sidebar-nav-label">Dashboard</span>
+        </a>
+        <a href="/schedule" class="sidebar-nav-item" data-route="/schedule">
+          <span class="sidebar-nav-icon" aria-hidden="true">📅</span>
+          <span class="sidebar-nav-label">Today's Schedule</span>
+        </a>
+        <a href="/medicines" class="sidebar-nav-item" data-route="/medicines">
+          <span class="sidebar-nav-icon" aria-hidden="true">💊</span>
+          <span class="sidebar-nav-label">My Medicines</span>
+        </a>
+        <a href="/health-records" class="sidebar-nav-item" data-route="/health-records">
+          <span class="sidebar-nav-icon" aria-hidden="true">📋</span>
+          <span class="sidebar-nav-label">Health Records</span>
+        </a>
+        <a href="/medical-reports" class="sidebar-nav-item" data-route="/medical-reports">
+          <span class="sidebar-nav-icon" aria-hidden="true">🔒</span>
+          <span class="sidebar-nav-label">Medical Reports</span>
+        </a>
+        <a href="/doctor-visits" class="sidebar-nav-item" data-route="/doctor-visits">
+          <span class="sidebar-nav-icon" aria-hidden="true">🩺</span>
+          <span class="sidebar-nav-label">Doctor Visits</span>
+        </a>
+      </div>
+
+      <!-- Caregiver-Only Navigation Group -->
+      <div id="caregiverNavGroup" class="nav-role-group" style="display: none;">
+        <a href="/caregiver" class="sidebar-nav-item" data-route="/caregiver" id="navCaregiverDashboard">
+          <span class="sidebar-nav-icon" aria-hidden="true">📊</span>
+          <span class="sidebar-nav-label">Dashboard</span>
+        </a>
+        <a href="/caregiver/patients" class="sidebar-nav-item" data-route="/caregiver/patients" id="navCaregiverPatients">
+          <span class="sidebar-nav-icon" aria-hidden="true">👥</span>
+          <span class="sidebar-nav-label">My Patients</span>
+        </a>
+        <a href="/caregiver/schedule" class="sidebar-nav-item" data-route="/caregiver/schedule" id="navCaregiverSchedule">
+          <span class="sidebar-nav-icon" aria-hidden="true">📅</span>
+          <span class="sidebar-nav-label">Medicine Schedule</span>
+        </a>
+      </div>
+
+      <!-- Shared Navigation Destinations -->
+      <a href="/profile" class="sidebar-nav-item" data-route="/profile" id="navProfile">
+        <span class="sidebar-nav-icon" aria-hidden="true">👤</span>
+        <span class="sidebar-nav-label">My Profile</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer: Patient Avatar & Single Sign Out Button -->
+    <div class="sidebar-footer">
+      <a href="/profile" data-route="/profile" class="sidebar-user-card" id="sidebarUserCard" aria-label="Go to My Profile">
+        <div class="sidebar-avatar-wrap">
+          <div class="avatar-initials" id="sidebarAvatarInitials">P</div>
+          <img src="" alt="Profile picture" class="avatar-img" id="sidebarAvatarImg" style="display: none;">
+        </div>
+        <div class="sidebar-user-details">
+          <span class="sidebar-user-name" id="sidebarUserName">Patient</span>
+          <span class="sidebar-user-email" id="sidebarUserEmail">patient@example.com</span>
+        </div>
+      </a>
+
+      <!-- Exactly ONE Sign Out Button (Unrepeated) -->
+      <button type="button" class="btn btn-secondary btn-sm sidebar-signout-btn" id="btnSignOut">
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- Mobile Drawer Backdrop Overlay -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" style="display: none;"></div>
+
+  <!-- Main Patient Interface Content -->
+  <main id="main-content" class="main-content" role="main">
+
+    <!-- Mobile Compact Header Bar (Visible on mobile & tablet) -->
+    <header class="mobile-app-bar" id="mobileAppBar">
+      <button type="button" class="mobile-menu-btn" id="mobileSidebarToggle" aria-label="Open navigation sidebar">
+        ☰
+      </button>
+      <div class="mobile-brand">
+        <img src="/assets/medimate-logo.jpg" alt="MediMate emblem" class="mobile-logo" width="34" height="34">
+        <span class="brand-name" style="font-size: 1.25rem;">Medi<span>Mate</span></span>
+      </div>
+    </header>
+
+    <!-- Global App Loading Banner -->
+    <div id="appLoadingState" style="text-align: center; padding: 48px 20px; display: none;">
+      <div class="spinner-icon" aria-hidden="true"></div>
+      <p style="font-size: var(--font-size-lg); color: var(--color-teal-dark); font-weight: 700;">
+        Connecting to MediMate...
+      </p>
+    </div>
+
+    <!-- Global App Error Banner with Retry -->
+    <div id="appErrorBanner" class="app-error-banner" style="display: none;" role="alert" aria-live="assertive">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.25rem;" aria-hidden="true">⚠️</span>
+        <span id="appErrorMessage">Unable to load your healthcare records. Please check your connection.</span>
+      </div>
+      <button type="button" id="btnRetryFetch">Retry</button>
+    </div>
+
+    <!-- 1. PUBLIC VIEW (Shown when user is NOT logged in) -->
+    <div id="publicView" style="display: none;">
+      
+      <!-- Welcome Hero Section -->
+      <section class="hero-section" id="home" aria-labelledby="welcomeHeading">
+        <div class="hero-text-block">
+          <div class="hero-badge">
+            <span>✓ Calm & Accessible Healthcare for Patients & Caregivers</span>
+          </div>
+          <h1 id="welcomeHeading" class="hero-title">
+            Take care of your health, <br>one day at a time.
+          </h1>
+          <p class="hero-subtitle">
+            Keep track of your medicines and health information in one simple place. Designed with larger text, clear buttons, and easy navigation for patients and family caregivers.
+          </p>
+          <div class="hero-button-group">
+            <button type="button" class="btn btn-primary" id="btnHeroSignUp">
+              ✨ Create Free Account
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnHeroSignIn">
+              🔑 Sign In to Your Records
+            </button>
+          </div>
+          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 14px; margin-bottom: 0;">
+            Patients and caregivers can sign in here through one unified portal.
+          </p>
+        </div>
+
+        <div class="hero-visual-card">
+          <img 
+            src="/assets/medimate-logo.jpg" 
+            alt="MediMate official emblem" 
+            class="hero-logo-large"
+            width="140" 
+            height="140"
+          >
+          <div class="hero-daily-pill">
+            <span class="hero-daily-count" style="font-size: 1.1rem; color: var(--color-text-main);">Private & Secure</span>
+            <span class="hero-daily-label">User-Specific Health Storage</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature Overview Cards -->
+      <section class="features-section" aria-labelledby="featuresHeading">
+        <div class="section-header">
+          <h2 id="featuresHeading" class="section-title">Designed for Everyday Ease</h2>
+          <p class="section-desc">
+            Everything you need to manage your personal health routine without confusing technical menus or tiny text.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <!-- Feature 1: Medicine Reminders -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-teal" aria-hidden="true">⏰</div>
+            <h3 class="feature-card-title">Medicine Reminders</h3>
+            <p class="feature-card-text">
+              Keep track of medicine schedules and doses. Know exactly what to take in the morning, afternoon, and evening.
+            </p>
+          </article>
+
+          <!-- Feature 2: Daily Health Dashboard -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-blue" aria-hidden="true">📊</div>
+            <h3 class="feature-card-title">Daily Health Dashboard</h3>
+            <p class="feature-card-text">
+              View today's schedule and health activity with reassuring progress indicators and one-tap dose checkoffs.
+            </p>
+          </article>
+
+          <!-- Feature 3: Health Records -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-green" aria-hidden="true">📋</div>
+            <h3 class="feature-card-title">Health Records</h3>
+            <p class="feature-card-text">
+              Organize personal health notes, doctor visit summaries, and vitals in one safe, easily searchable place.
+            </p>
+          </article>
+
+          <!-- Feature 4: Simple for Everyone -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-purple" aria-hidden="true">❤️</div>
+            <h3 class="feature-card-title">Simple for Everyone</h3>
+            <p class="feature-card-text">
+              Readable typography, large touch-friendly buttons, and gentle plain language created for older adults and families.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Public Protected Information Notice -->
+      <section class="schedule-section" style="text-align: center; padding: 40px 24px; background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); margin-top: 36px;" aria-labelledby="protectedInfoHeading">
+        <span style="font-size: 2.25rem; display: block; margin-bottom: 10px;" aria-hidden="true">🔒</span>
+        <h2 id="protectedInfoHeading" class="section-title" style="margin-bottom: 10px; font-size: var(--font-size-xl);">Protected Health Information</h2>
+        <p class="section-desc" style="max-width: 620px; margin: 0 auto 12px;">
+          Medicine schedules, dose tracking, and clinical records are privately protected. Patients and authorized caregivers must authenticate to access protected health records.
+        </p>
+        <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); max-width: 540px; margin: 0 auto;">
+          Please sign in or create an account using the navigation buttons at the top of the page.
+        </p>
+      </section>
+
+    </div>
+
+    <!-- 2. AUTHENTICATED USER INTERFACES (Dedicated Page Views) -->
+    <div id="authenticatedView" style="display: none;">
+
+      <!-- A. Dedicated Page View: Dashboard Overview (/dashboard) -->
+      <section class="page-view" id="viewDashboard" role="region" aria-label="Dashboard Overview Page">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>📊 Overview</span></div>
+            <h1 class="page-title">Patient Dashboard</h1>
+            <p class="page-subtitle">
+              Welcome back, <span id="dashPatientName">Patient</span>. A comprehensive overview of today's schedule, upcoming consultations, and recent health activity.
+            </p>
+          </div>
+          <div class="page-header-actions dash-quick-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="btnDashAddMed">+ Add Medicine</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnDashAddRecord">+ Health Record</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnDashUploadReport">+ Upload Report</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnDashAddVisit">+ Doctor Visit</button>
+          </div>
+        </div>
+
+        <!-- Real Metrics Summary Cards (Zero Fabricated Data) -->
+        <div class="dashboard-metrics-grid" aria-label="Health Summary Metrics">
+          <!-- Card 1: Today's Dose Adherence -->
+          <article class="metric-card">
+            <div class="metric-header">
+              <span class="metric-icon" aria-hidden="true">💊</span>
+              <span class="metric-badge" id="dashAdherenceBadge">Today</span>
+            </div>
+            <div class="metric-value" id="dashAdherenceValue">0 of 0</div>
+            <div class="metric-label" id="dashAdherenceLabel">Doses taken today (0%)</div>
+            <div class="progress-track" style="margin-bottom: 12px;" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="dashProgressBar">
+              <div class="progress-fill" id="dashProgressFill" style="width: 0%;"></div>
+            </div>
+            <a href="/schedule" data-route="/schedule" class="metric-link">Go to Today's Schedule →</a>
+          </article>
+
+          <!-- Card 2: Active Prescriptions -->
+          <article class="metric-card">
+            <div class="metric-header">
+              <span class="metric-icon" aria-hidden="true">📋</span>
+              <span class="metric-badge">Prescriptions</span>
+            </div>
+            <div class="metric-value" id="dashMedsTotal">0</div>
+            <div class="metric-label">Active medicines on file</div>
+            <a href="/medicines" data-route="/medicines" class="metric-link">Manage Medicines →</a>
+          </article>
+
+          <!-- Card 3: Next Doctor Consultation -->
+          <article class="metric-card">
+            <div class="metric-header">
+              <span class="metric-icon" aria-hidden="true">🩺</span>
+              <span class="metric-badge">Consultation</span>
+            </div>
+            <div class="metric-value" style="font-size: 1.35rem; line-height: 1.3;" id="dashNextVisitDoctor">No upcoming visits</div>
+            <div class="metric-label" id="dashNextVisitMeta">Schedule your next consultation</div>
+            <a href="/doctor-visits" data-route="/doctor-visits" class="metric-link">View Doctor Visits →</a>
+          </article>
+
+          <!-- Card 4: Medical Documents & Records -->
+          <article class="metric-card">
+            <div class="metric-header">
+              <span class="metric-icon" aria-hidden="true">🔒</span>
+              <span class="metric-badge">Files & Notes</span>
+            </div>
+            <div class="metric-value" id="dashDocsTotal">0 Reports</div>
+            <div class="metric-label" id="dashRecordsTotal">0 clinical notes on record</div>
+            <a href="/medical-reports" data-route="/medical-reports" class="metric-link">View Medical Reports →</a>
+          </article>
+        </div>
+
+        <!-- Two-Column Responsive Overview -->
+        <div class="dashboard-columns-grid">
+          <!-- Column 1: Today's Medicine Schedule Snapshot -->
+          <section class="dashboard-panel" aria-label="Today's Prescriptions Snapshot">
+            <div class="dashboard-panel-header">
+              <h2 class="dashboard-panel-title">Today's Schedule Snapshot</h2>
+              <a href="/schedule" data-route="/schedule" class="btn btn-secondary btn-sm">Full Schedule →</a>
+            </div>
+            <div id="dashTodaySnapshotContainer" aria-live="polite">
+              <!-- Rendered dynamically -->
+            </div>
+          </section>
+
+          <!-- Column 2: Upcoming Appointments & Clinical Activity -->
+          <section class="dashboard-panel" aria-label="Upcoming Consultations & Clinical Activity">
+            <div class="dashboard-panel-header">
+              <h2 class="dashboard-panel-title">Upcoming Consultations</h2>
+              <a href="/doctor-visits" data-route="/doctor-visits" class="btn btn-secondary btn-sm">All Visits →</a>
+            </div>
+            <div id="dashUpcomingVisitsContainer" style="margin-bottom: 24px;" aria-live="polite">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <div class="dashboard-panel-header" style="margin-top: 24px;">
+              <h2 class="dashboard-panel-title">Recent Health Notes & Reports</h2>
+              <a href="/health-records" data-route="/health-records" class="btn btn-secondary btn-sm">All Records →</a>
+            </div>
+            <div id="dashRecentActivityContainer" aria-live="polite">
+              <!-- Rendered dynamically -->
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- B. Dedicated Page View: Today's Schedule (/schedule) -->
+      <section class="page-view" id="viewSchedule" role="region" aria-label="Today's Schedule Page">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>📅 Daily Schedule</span></div>
+            <h1 class="page-title">Today's Medicine Schedule</h1>
+            <p class="page-subtitle">
+              Track and check off your prescribed doses throughout the day. Everything is saved directly to your account.
+            </p>
+          </div>
+          <div class="page-header-actions">
+            <button type="button" class="btn btn-primary" id="btnQuickAddMed">
+              + Add a Medicine
+            </button>
+          </div>
+        </div>
+
+        <!-- Schedule Progress Widget -->
+        <div class="progress-widget" aria-live="polite">
+          <div class="progress-label-row">
+            <span>Today's Dose Adherence</span>
+            <span id="scheduleProgressText">0 of 0 doses taken (0%)</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="scheduleProgressBar">
+            <div class="progress-fill" id="scheduleProgressFill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Real Schedule Items List -->
+        <div class="schedule-list" id="scheduleListContainer" aria-label="List of scheduled doses for today">
+          <!-- Rendered dynamically from backend -->
+        </div>
+      </section>
+
+      <!-- C. Dedicated Page View: My Medicines (/medicines) -->
+      <section class="page-view" id="viewMedicines" role="region" aria-label="My Medicines Page">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>💊 Prescriptions</span></div>
+            <h1 class="page-title">My Medicines</h1>
+            <p class="page-subtitle">
+              Manage your active prescription list, dosage strengths, and daily timing instructions.
+            </p>
+          </div>
+          <div class="page-header-actions">
+            <button type="button" class="btn btn-primary" id="btnOpenAddMedModal">
+              + Add New Medicine
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="section-controls-row">
+          <div class="search-box-wrapper">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input 
+              type="search" 
+              class="search-input" 
+              id="medSearchInput" 
+              placeholder="Search medicines by name or instructions..." 
+              aria-label="Search medicines by name"
+            >
+          </div>
+
+          <div class="filter-pill-group" role="group" aria-label="Filter medicines by time of day">
+            <button type="button" class="filter-btn active" data-time="all">All Times</button>
+            <button type="button" class="filter-btn" data-time="Morning">Morning</button>
+            <button type="button" class="filter-btn" data-time="Afternoon">Afternoon</button>
+            <button type="button" class="filter-btn" data-time="Night">Night</button>
+          </div>
+
+          <div class="filter-pill-group" role="group" aria-label="Filter medicines by course status">
+            <button type="button" class="filter-btn med-status-btn active" data-status="all">All Courses</button>
+            <button type="button" class="filter-btn med-status-btn" data-status="active">Active Only</button>
+            <button type="button" class="filter-btn med-status-btn" data-status="completed">Completed</button>
+          </div>
+
+          <div class="section-meta-count" id="medsCountBadge">Showing all medicines</div>
+        </div>
+
+        <!-- Real Medicines Cards Grid -->
+        <div class="cards-grid" id="medicinesGridContainer" aria-label="Your medicines list">
+          <!-- Rendered dynamically from backend -->
+        </div>
+      </section>
+
+      <!-- D. Dedicated Page View: Health Records (/health-records) -->
+      <section class="page-view" id="viewRecords" role="region" aria-label="Health Records Page">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>📋 Clinical Notes</span></div>
+            <h1 class="page-title">Health Records & Notes</h1>
+            <p class="page-subtitle">
+              Store your vital signs, consultation summaries, and medical observations in one safe place.
+            </p>
+          </div>
+          <div class="page-header-actions">
+            <button type="button" class="btn btn-primary" id="btnOpenAddRecordModal">
+              + Add Health Record
+            </button>
+          </div>
+        </div>
+
+        <!-- Category Filter Pills & Count -->
+        <div class="section-controls-row">
+          <div class="filter-pill-group" role="group" aria-label="Filter health records by category">
+            <button type="button" class="filter-btn record-filter-btn active" data-category="all">All Records</button>
+            <button type="button" class="filter-btn record-filter-btn" data-category="Doctor Visit">Doctor Visits</button>
+            <button type="button" class="filter-btn record-filter-btn" data-category="Vitals & BP">Vitals & BP</button>
+            <button type="button" class="filter-btn record-filter-btn" data-category="Lab Results">Lab Results</button>
+            <button type="button" class="filter-btn record-filter-btn" data-category="General Notes">General Notes</button>
+          </div>
+
+          <div class="section-meta-count" id="recordsCountBadge">Showing all records</div>
+        </div>
+
+        <!-- Real Health Records Grid -->
+        <div class="cards-grid" id="recordsGridContainer" aria-label="Your health records list">
+          <!-- Rendered dynamically from backend -->
+        </div>
+      </section>
+
+      <!-- E. Dedicated Page View: Medical Reports (/medical-reports) -->
+      <section class="page-view" id="viewReports" role="region" aria-label="Medical Reports Page">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>🔒 Secure Documents</span></div>
+            <h1 class="page-title">Medical Documents & Reports</h1>
+            <p class="page-subtitle">
+              Store and review your lab test reports, prescriptions, scans, and clinical PDFs in private, secure patient storage.
+            </p>
+          </div>
+          <div class="page-header-actions">
+            <button type="button" class="btn btn-primary" id="btnOpenUploadReportModal">
+              + Upload Document
+            </button>
+          </div>
+        </div>
+
+        <!-- Search, Category Filters & Count -->
+        <div class="section-controls-row">
+          <div class="search-box-wrapper">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input 
+              type="search" 
+              class="search-input" 
+              id="reportSearchInput" 
+              placeholder="Search documents by title or filename..." 
+              aria-label="Search documents by title"
+            >
+          </div>
+
+          <div class="filter-pill-group" role="group" aria-label="Filter documents by category">
+            <button type="button" class="filter-btn report-filter-btn active" data-category="all">All Documents</button>
+            <button type="button" class="filter-btn report-filter-btn" data-category="Lab Report">Lab Reports</button>
+            <button type="button" class="filter-btn report-filter-btn" data-category="Prescription">Prescriptions</button>
+            <button type="button" class="filter-btn report-filter-btn" data-category="Scan / X-Ray">Scans & X-Rays</button>
+            <button type="button" class="filter-btn report-filter-btn" data-category="Discharge Summary">Discharge Summaries</button>
+            <button type="button" class="filter-btn report-filter-btn" data-category="Other">Other</button>
+          </div>
+
+          <div class="section-meta-count" id="reportsCountBadge">Showing all documents</div>
+        </div>
+
+        <!-- Real Medical Reports Grid -->
+        <div class="cards-grid" id="reportsGridContainer" aria-label="Your medical documents list">
+          <!-- Rendered dynamically from backend -->
+        </div>
+      </section>
+
+      <!-- F. Dedicated Page View: Doctor Visits (/doctor-visits) -->
+      <section class="page-view" id="viewVisits" role="region" aria-label="Doctor Visits Page">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>🩺 Consultations</span></div>
+            <h1 class="page-title">Doctor Visits & Appointments</h1>
+            <p class="page-subtitle">
+              Track upcoming consultations, clinic visits, and past doctor recommendations in one organized schedule.
+            </p>
+          </div>
+          <div class="page-header-actions">
+            <button type="button" class="btn btn-primary" id="btnOpenAddVisitModal">
+              + Schedule Visit
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Filter Pills & Count -->
+        <div class="section-controls-row">
+          <div class="filter-pill-group" role="group" aria-label="Filter doctor appointments by status">
+            <button type="button" class="filter-btn visit-filter-btn active" data-status="all">All Visits</button>
+            <button type="button" class="filter-btn visit-filter-btn" data-status="Upcoming">Upcoming</button>
+            <button type="button" class="filter-btn visit-filter-btn" data-status="Completed">Completed</button>
+            <button type="button" class="filter-btn visit-filter-btn" data-status="Cancelled">Cancelled</button>
+          </div>
+
+          <div class="section-meta-count" id="visitsCountBadge">Showing all appointments</div>
+        </div>
+
+        <!-- Real Doctor Visits Grid -->
+        <div class="cards-grid" id="visitsGridContainer" aria-label="Your doctor appointments list">
+          <!-- Rendered dynamically from backend -->
+        </div>
+      </section>
+
+      <!-- G. Dedicated Page View: My Profile (/profile) -->
+      <section class="page-view" id="viewProfile" role="region" aria-label="Patient Profile Page">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge" id="profileRoleBadge"><span>👤 Patient Profile</span></div>
+            <h1 class="page-title">My Profile</h1>
+            <p class="page-subtitle" id="profilePageSubtitle">
+              Manage your personal information, emergency contacts, and profile photo in one safe place.
+            </p>
+          </div>
+        </div>
+
+        <div class="profile-layout-grid">
+          <!-- Card 1: Avatar & Account Summary -->
+          <div class="profile-card profile-summary-card">
+            <div class="avatar-large-wrap profile-avatar-large-wrap" id="profileLargeAvatarContainer">
+              <div class="avatar-large-initials" id="profileLargeInitials">P</div>
+              <img src="" alt="Profile picture" class="avatar-large-img" id="profileLargeImg" style="display: none;">
+            </div>
+
+            <h2 class="profile-card-name" id="profileSummaryName">Patient</h2>
+            <p class="profile-card-email" id="profileSummaryEmail">patient@example.com</p>
+            <div class="profile-meta-badge" id="profileMemberSince">Member since October 2026</div>
+
+            <!-- Profile Picture Actions -->
+            <div class="profile-photo-actions">
+              <label for="profilePhotoInput" class="btn btn-secondary btn-sm" id="btnSelectPhoto" style="cursor: pointer;">
+                📷 Choose Photo
+              </label>
+              <input type="file" id="profilePhotoInput" accept="image/jpeg,image/png,image/webp" style="display: none;">
+              <button type="button" class="btn btn-danger btn-sm" id="btnRemovePhoto" style="display: none;">
+                Remove Photo
+              </button>
+            </div>
+
+            <!-- Instant Photo Preview Container -->
+            <div id="profilePhotoPreviewBox" class="photo-preview-box" style="display: none;">
+              <p class="photo-preview-label">Selected Photo Preview:</p>
+              <img id="photoPreviewImg" class="photo-preview-img photo-preview-thumb" alt="Selected photo preview">
+              <div class="photo-btn-group photo-preview-btns">
+                <button type="button" class="btn btn-primary btn-sm" id="btnConfirmUploadPhoto">Save Photo</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btnCancelPhotoPreview">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-main-col">
+            <!-- Card 2: Editable Details Form -->
+            <div class="profile-card profile-details-card">
+              <h3 class="profile-section-title">Personal Details</h3>
+              <form id="profileForm" novalidate>
+                <div class="form-group">
+                  <label for="profileNameInput" class="form-label">
+                    Full Name <span class="required" aria-hidden="true">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="profileNameInput" 
+                    class="form-input" 
+                    required 
+                    minlength="2" 
+                    maxlength="60"
+                    placeholder="Your full name"
+                  >
+                  <p class="form-error-msg" id="profileNameError">Please enter your full name (minimum 2 characters).</p>
+                </div>
+
+                <div class="form-group">
+                  <label for="profileEmailInput" class="form-label">
+                    Registered Email Address (Read-only)
+                  </label>
+                  <input 
+                    type="email" 
+                    id="profileEmailInput" 
+                    class="form-input" 
+                    readonly 
+                    disabled 
+                    style="background-color: var(--color-surface-hover); cursor: not-allowed;"
+                  >
+                  <p class="form-hint">Email address is read-only to safeguard account credentials.</p>
+                </div>
+
+                <div class="form-group">
+                  <label for="profilePhoneInput" class="form-label">
+                    Phone Number (Optional)
+                  </label>
+                  <input 
+                    type="tel" 
+                    id="profilePhoneInput" 
+                    class="form-input" 
+                    placeholder="e.g., +1 (555) 019-2834" 
+                    maxlength="30"
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label for="profileEmergencyInput" class="form-label">
+                    Emergency Contact (Optional)
+                  </label>
+                  <input 
+                    type="text" 
+                    id="profileEmergencyInput" 
+                    class="form-input" 
+                    placeholder="e.g., Jane Vance (Spouse) · +1 (555) 982-1049" 
+                    maxlength="100"
+                  >
+                  <p class="form-hint">Family member, caregiver, or doctor contact for medical emergencies.</p>
+                </div>
+
+                <div class="form-group">
+                  <label for="profileThemeSelect" class="form-label">
+                    Theme Preference
+                  </label>
+                  <select id="profileThemeSelect" class="form-select">
+                    <option value="system">Follow System Setting</option>
+                    <option value="light">Light Mode</option>
+                    <option value="dark">Dark Mode</option>
+                  </select>
+                </div>
+
+                <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+                  <button type="submit" class="btn btn-primary" id="btnSaveProfile">
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Card 3: Notification & Reminder Preferences -->
+            <div class="profile-card profile-notif-card" style="margin-top: 24px;">
+              <div class="profile-card-header" style="margin-bottom: 16px;">
+                <h3 class="profile-section-title" style="margin-bottom: 4px;">Notification & Reminder Preferences</h3>
+                <p style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Configure how and when MediMate alerts you for scheduled doses.</p>
+              </div>
+
+              <div class="notif-pref-list">
+                <!-- 1. In-App Dose Alerts -->
+                <div class="pref-row">
+                  <div class="pref-info">
+                    <label for="prefInAppReminders" class="pref-label">In-App Dose Alerts</label>
+                    <p class="pref-desc">Show on-screen alerts, banner reminders, and unread badges while using MediMate.</p>
+                  </div>
+                  <label class="switch-toggle" aria-label="Toggle in-app dose alerts">
+                    <input type="checkbox" id="prefInAppReminders" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <!-- 2. Browser Desktop Alerts -->
+                <div class="pref-row">
+                  <div class="pref-info">
+                    <label for="prefBrowserAlerts" class="pref-label">Desktop Browser Notifications</label>
+                    <p class="pref-desc">Receive system notification popups on your device even if the browser tab is minimized.</p>
+                  </div>
+                  <label class="switch-toggle" aria-label="Toggle desktop browser notifications">
+                    <input type="checkbox" id="prefBrowserAlerts">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <!-- 3. System Permission Status & Action -->
+                <div class="pref-status-box" id="prefStatusBox">
+                  <div class="pref-status-info">
+                    <span class="pref-status-label">Device Permission Status:</span>
+                    <span class="permission-status-badge status-default" id="prefPermissionBadge">Checking...</span>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnRequestPermissionAction" style="display: none;">
+                    Allow in Browser
+                  </button>
+                </div>
+
+                <!-- 4. Background Push Delivery Status -->
+                <div class="pref-status-box" id="prefPushStatusBox" style="margin-top: 10px;">
+                  <div class="pref-status-info">
+                    <span class="pref-status-label">Background Push Delivery:</span>
+                    <span class="permission-status-badge status-default" id="prefPushBadge">Checking...</span>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSubscribePushAction" style="display: none;">
+                    Enable Push
+                  </button>
+                </div>
+
+                <!-- 5. Safe Test Notification Trigger -->
+                <div class="pref-test-action">
+                  <div class="pref-test-info">
+                    <strong class="pref-test-title">Send Test Reminder</strong>
+                    <p class="pref-test-desc">Verify that your visual and audio alerts work on this device without affecting your medicine schedule or patient history.</p>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSendTestReminder">
+                    🔔 Test Notification
+                  </button>
+                </div>
+
+                <!-- 6. Background Push & Scheduler Diagnostics -->
+                <div class="pref-test-action" style="margin-top: 10px;">
+                  <div class="pref-test-info">
+                    <strong class="pref-test-title">Notification Diagnostics</strong>
+                    <p class="pref-test-desc">Check system service worker, push registration status, VAPID health, and server delivery logs.</p>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpenNotifDiagnostics">
+                    🔍 Diagnostics
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Caregiver Access & Helpers (Patient role) -->
+            <div class="profile-card profile-caregiver-card" id="patientCaregiverCard" style="margin-top: 24px;">
+              <div class="profile-card-header" style="margin-bottom: 16px;">
+                <h3 class="profile-section-title" style="margin-bottom: 4px;">🤝 Caregiver Access & Helpers</h3>
+                <p style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+                  Authorize family members or trusted caregivers to view your medication schedule and adherence.
+                </p>
+              </div>
+
+              <!-- Inline Alert / Status Message -->
+              <div id="caregiverCardAlert" class="caregiver-card-alert" style="display: none;" role="alert"></div>
+
+              <!-- Generate Invite Section -->
+              <div class="caregiver-invite-panel">
+                <div class="caregiver-invite-header">
+                  <div>
+                    <strong class="caregiver-invite-title">Invite a Caregiver</strong>
+                    <span class="caregiver-invite-subtitle">Generate a secure, single-use 15-minute connection code.</span>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnGenerateCaregiverInvite">
+                    ✨ Generate Invite Code
+                  </button>
+                </div>
+
+                <!-- Newly Generated Code Box (Initially Hidden) -->
+                <div id="newInviteBox" class="caregiver-new-code-box" style="display: none;">
+                  <div class="invite-header-row">
+                    <div class="invite-badge-wrap">
+                      <span class="invite-status-badge">NEW INVITATION CODE</span>
+                      <span class="invite-countdown" id="inviteCountdown">
+                        ⏱️ Expires in <strong id="inviteCountdownTimer">15:00</strong>
+                      </span>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btnCopyInviteCode">
+                      📋 Copy Code
+                    </button>
+                  </div>
+                  <div id="inviteCodeDisplay" class="invite-code-display" title="Click to copy or share with your caregiver"></div>
+                  <p class="invite-code-hint">
+                    🔒 Share this 48-character code privately with your caregiver. They must enter it in their Caregiver Portal before the countdown expires.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Active Pending Invites -->
+              <div class="caregiver-section-block">
+                <div class="caregiver-section-header">
+                  <h4 class="caregiver-block-title">Pending Invitations</h4>
+                  <span class="caregiver-count-pill" id="pendingInvitesCount">0 Pending</span>
+                </div>
+                <div id="pendingInvitesContainer">
+                  <p class="caregiver-empty-hint">No pending invitations.</p>
+                </div>
+              </div>
+
+              <!-- Connected Caregivers List -->
+              <div class="caregiver-section-block" style="margin-bottom: 0;">
+                <div class="caregiver-section-header">
+                  <h4 class="caregiver-block-title">Connected Caregivers</h4>
+                  <span class="caregiver-count-pill" id="activeCaregiversCount">0 Active</span>
+                </div>
+                <div id="activeCaregiversContainer">
+                  <p class="caregiver-empty-hint">No caregivers connected yet. Generate an invite code above to get started.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- H. Dedicated Page View: Caregiver Dashboard (/caregiver) -->
+      <section class="page-view" id="viewCaregiverDashboard" role="region" aria-label="Caregiver Dashboard" style="display: none;">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>🤝 Caregiver Workspace</span></div>
+            <h1 class="page-title">Caregiver Dashboard</h1>
+            <p class="page-subtitle">
+              Welcome back, <span id="caregiverDashGreetingName">Caregiver</span>. Overview of your linked patients, today's medication adherence, and upcoming doses.
+            </p>
+          </div>
+          <div class="page-header-actions">
+            <a href="/caregiver/patients" data-route="/caregiver/patients" class="btn btn-primary btn-sm">
+              👥 Manage Patients
+            </a>
+            <a href="/caregiver/schedule" data-route="/caregiver/schedule" class="btn btn-secondary btn-sm" id="btnDashToSchedule">
+              📅 View Schedule
+            </a>
+          </div>
+        </div>
+
+        <!-- Caregiver Active Patient Banner / Selector -->
+        <div id="caregiverDashActiveContextCard" class="profile-card" style="margin-bottom: 24px; display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div class="avatar-initials" id="caregiverDashPatientAvatar" style="width: 48px; height: 48px; font-size: 1.25rem; background: var(--color-teal); color: #fff; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                P
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="permission-status-badge status-allowed" style="font-size: 0.72rem;">Active Link</span>
+                  <span class="page-badge" style="margin: 0; font-size: 0.72rem;"><span>🔒 Read-Only</span></span>
+                </div>
+                <h2 id="caregiverDashPatientName" style="font-size: var(--font-size-lg); font-weight: 700; color: var(--color-text-main); margin: 2px 0 0;">
+                  Patient Name
+                </h2>
+                <p id="caregiverDashPatientEmail" style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin: 2px 0 0;">
+                  patient@example.com
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div id="caregiverDashPatientSelectWrapper" style="display: none;">
+                <label for="caregiverDashPatientSelect" class="sr-only">Switch Patient</label>
+                <select id="caregiverDashPatientSelect" class="form-input" style="padding: 6px 12px; font-size: var(--font-size-xs); min-width: 180px;">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+              <a href="/caregiver/schedule" data-route="/caregiver/schedule" class="btn btn-secondary btn-sm">
+                Full Schedule →
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real Metrics Summary Cards for Selected Patient -->
+        <div id="caregiverDashMetricsGrid" class="dashboard-metrics-grid" aria-label="Caregiver Oversight Summary Metrics" style="display: none;">
+          <!-- Card 1: Today's Dose Adherence -->
+          <article class="metric-card">
+            <div class="metric-header">
+              <span class="metric-icon" aria-hidden="true">💊</span>
+              <span class="metric-badge" id="caregiverDashAdherenceBadge">Today</span>
+            </div>
+            <div class="metric-value" id="caregiverDashAdherenceValue">0 of 0</div>
+            <div class="metric-label" id="caregiverDashAdherenceLabel">Doses taken today (0%)</div>
+            <div class="progress-track" style="margin-bottom: 12px;" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="caregiverDashProgressBar">
+              <div class="progress-fill" id="caregiverDashProgressFill" style="width: 0%;"></div>
+            </div>
+            <a href="/caregiver/schedule" data-route="/caregiver/schedule" class="metric-link">View schedule timeline →</a>
+          </article>
+
+          <!-- Card 2: Next Upcoming Dose -->
+          <article class="metric-card">
+            <div class="metric-header">
+              <span class="metric-icon" aria-hidden="true">⏰</span>
+              <span class="metric-badge" id="caregiverDashNextDoseBadge">Next Dose</span>
+            </div>
+            <div class="metric-value" style="font-size: 1.2rem; line-height: 1.3;" id="caregiverDashNextDoseName">No doses due</div>
+            <div class="metric-label" id="caregiverDashNextDoseMeta">All scheduled doses taken or none scheduled</div>
+            <span class="metric-link" style="text-decoration: none; cursor: default; color: var(--color-teal);">
+              Calculated from patient schedule
+            </span>
+          </article>
+
+          <!-- Card 3: Active Prescriptions -->
+          <article class="metric-card">
+            <div class="metric-header">
+              <span class="metric-icon" aria-hidden="true">📋</span>
+              <span class="metric-badge">Prescriptions</span>
+            </div>
+            <div class="metric-value" id="caregiverDashTotalMeds">0</div>
+            <div class="metric-label" id="caregiverDashTotalMedsLabel">Prescriptions tracked</div>
+            <a href="/caregiver/patients" data-route="/caregiver/patients" class="metric-link">Manage linked patients →</a>
+          </article>
+        </div>
+
+        <!-- Empty State (No Linked Patients) -->
+        <div id="caregiverDashEmptyState" class="empty-state" style="display: none; padding: 48px 20px; background: var(--color-surface); border: 1px dashed var(--color-border); border-radius: var(--radius-md); text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 12px;" aria-hidden="true">🤝</div>
+          <h3 style="font-size: var(--font-size-xl); font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">No Patients Connected Yet</h3>
+          <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); max-width: 520px; margin: 0 auto 20px; line-height: 1.6;">
+            To oversee medication adherence and schedules, connect to your loved one or patient. Ask them to generate a 15-minute invite code from their profile, then enter it in the My Patients page.
+          </p>
+          <a href="/caregiver/patients" data-route="/caregiver/patients" class="btn btn-primary">
+            🔗 Connect a Patient
+          </a>
+        </div>
+      </section>
+
+      <!-- I. Dedicated Page View: My Patients (/caregiver/patients) -->
+      <section class="page-view" id="viewCaregiverPatients" role="region" aria-label="Caregiver Patients Management" style="display: none;">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>👥 Patient Roster</span></div>
+            <h1 class="page-title">My Patients</h1>
+            <p class="page-subtitle">
+              Manage your authorized patient links. Enter an invitation code to connect to a new patient, or review existing connections.
+            </p>
+          </div>
+        </div>
+
+        <!-- Connect to Patient Card -->
+        <div class="profile-card" style="margin-bottom: 24px;">
+          <h3 class="profile-section-title" style="margin-bottom: 4px;">Link to a New Patient</h3>
+          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: 16px;">
+            Ask your patient to generate a 15-minute invite code from their profile (Caregiver Access section), then paste it below.
+          </p>
+          <form id="caregiverConnectForm" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input 
+              type="text" 
+              id="caregiverInviteTokenInput" 
+              class="form-input" 
+              placeholder="Paste 48-character patient invite code here" 
+              style="flex: 1; min-width: 280px; font-family: monospace;"
+              required
+            >
+            <button type="submit" class="btn btn-primary" id="btnConnectPatient">
+              🔗 Connect to Patient
+            </button>
+          </form>
+          <p class="form-error-msg" id="caregiverConnectError" style="margin-top: 8px;"></p>
+        </div>
+
+        <!-- Connected Patients List -->
+        <div>
+          <div class="section-controls-row" style="margin-bottom: 16px;">
+            <h2 class="section-title" style="font-size: var(--font-size-lg); margin-bottom: 0;">Connected Patients</h2>
+            <div class="section-meta-count" id="caregiverPatientsCount">0 Patients Linked</div>
+          </div>
+
+          <div id="caregiverPatientsContainer" class="cards-grid" aria-label="Connected patients list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- J. Dedicated Page View: Caregiver Medicine Schedule (/caregiver/schedule) -->
+      <section class="page-view" id="viewCaregiverSchedule" role="region" aria-label="Caregiver Patient Medicine Schedule" style="display: none;">
+        <div class="page-header">
+          <div class="page-header-text">
+            <div class="page-badge"><span>📅 Medication Oversight</span></div>
+            <h1 class="page-title">Medicine Schedule</h1>
+            <p class="page-subtitle">
+              Read-only daily schedule showing prescribed medication times, dosages, and patient-recorded completion status.
+            </p>
+          </div>
+          <!-- Patient Switcher for Schedule View -->
+          <div class="page-header-actions" id="caregiverScheduleSwitcherWrapper" style="display: none;">
+            <label for="caregiverSchedulePatientSelect" style="font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-muted); margin-right: 6px;">Patient:</label>
+            <select id="caregiverSchedulePatientSelect" class="form-input" style="padding: 6px 12px; font-size: var(--font-size-xs); min-width: 180px;">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Selected Patient Detail Header & Adherence Overview -->
+        <div id="caregiverPatientDetailsSection">
+          <div id="caregiverScheduleContextCard" class="profile-card" style="margin-bottom: 24px; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                  <span class="page-badge" style="margin-bottom: 0;"><span>🔒 Read-Only Oversight</span></span>
+                  <span class="permission-status-badge status-allowed" id="caregiverDetailStatusBadge">Active Link</span>
+                </div>
+                <h2 id="caregiverDetailPatientName" style="font-size: var(--font-size-xl); font-weight: 700; color: var(--color-text-main); margin: 0;">
+                  Patient Medication Schedule
+                </h2>
+                <p id="caregiverDetailPatientEmail" style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 4px 0 0;">
+                  patient@example.com
+                </p>
+              </div>
+              <div style="text-align: right;" id="caregiverDetailMetaBox">
+                <span style="font-size: var(--font-size-xs); color: var(--color-text-muted); display: block;">Linked Since</span>
+                <strong id="caregiverDetailLinkedDate" style="font-size: var(--font-size-sm); color: var(--color-text-main);">-</strong>
+              </div>
+            </div>
+
+            <!-- Summary Metrics Cards (Adherence & Next Upcoming Dose) -->
+            <div class="dashboard-metrics-grid" style="margin-bottom: 0;" aria-label="Patient Adherence and Next Dose Summary">
+              <!-- Card 1: Today's Dose Adherence -->
+              <article class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-icon" aria-hidden="true">💊</span>
+                  <span class="metric-badge" id="caregiverAdherenceBadge">Today</span>
+                </div>
+                <div class="metric-value" id="caregiverAdherenceValue">0 of 0</div>
+                <div class="metric-label" id="caregiverAdherenceLabel">Doses taken today (0%)</div>
+                <div class="progress-track" style="margin-bottom: 12px;" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="caregiverProgressBar">
+                  <div class="progress-fill" id="caregiverProgressFill" style="width: 0%;"></div>
+                </div>
+                <span class="metric-link" style="text-decoration: none; cursor: default; color: var(--color-text-muted);">
+                  Real-time patient checkoffs
+                </span>
+              </article>
+
+              <!-- Card 2: Next Upcoming Dose -->
+              <article class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-icon" aria-hidden="true">⏰</span>
+                  <span class="metric-badge" id="caregiverNextDoseBadge">Next Dose</span>
+                </div>
+                <div class="metric-value" style="font-size: 1.25rem; line-height: 1.3;" id="caregiverNextDoseName">No doses due</div>
+                <div class="metric-label" id="caregiverNextDoseMeta">All scheduled doses taken or none scheduled</div>
+                <span class="metric-link" style="text-decoration: none; cursor: default; color: var(--color-teal);">
+                  Calculated from patient schedule
+                </span>
+              </article>
+
+              <!-- Card 3: Active Prescriptions -->
+              <article class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-icon" aria-hidden="true">📋</span>
+                  <span class="metric-badge">Prescriptions</span>
+                </div>
+                <div class="metric-value" id="caregiverTotalMeds">0</div>
+                <div class="metric-label" id="caregiverTotalMedsLabel">Prescriptions tracked</div>
+                <span class="metric-link" style="text-decoration: none; cursor: default; color: var(--color-text-muted);">
+                  Active medication courses
+                </span>
+              </article>
+            </div>
+          </div>
+
+          <!-- Today's Medicine Schedule Section -->
+          <div id="caregiverSchedulePanel" class="dashboard-panel" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 24px; display: none;">
+            <div class="section-controls-row" style="margin-bottom: 20px;">
+              <div>
+                <h3 class="section-title" style="font-size: var(--font-size-lg); margin-bottom: 4px;">
+                  Today's Medicine Schedule
+                </h3>
+                <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin: 0;">
+                  Showing prescribed times, dosages, and patient-recorded completion status. Doses cannot be modified by caregivers.
+                </p>
+              </div>
+              <div class="section-meta-count" id="caregiverScheduleCount">0 Doses Scheduled</div>
+            </div>
+
+            <!-- Schedule Items Dynamic Container -->
+            <div id="caregiverScheduleContainer" aria-live="polite">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Schedule Empty State (No Patients) -->
+        <div id="caregiverScheduleEmptyState" class="empty-state" style="display: none; padding: 48px 20px; background: var(--color-surface); border: 1px dashed var(--color-border); border-radius: var(--radius-md); text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 12px;" aria-hidden="true">🤝</div>
+          <h3 style="font-size: var(--font-size-xl); font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">No Patients Connected</h3>
+          <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); max-width: 520px; margin: 0 auto 20px; line-height: 1.6;">
+            Connect to a patient first to view their prescribed medicine schedule and daily adherence status.
+          </p>
+          <a href="/caregiver/patients" data-route="/caregiver/patients" class="btn btn-primary">
+            🔗 Go to My Patients
+          </a>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Site Footer (Minimal, clean, unrepeated) -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <p class="footer-copy">© 2026 MediMate. All rights reserved. Private and confidential patient portal.</p>
+    </div>
+  </footer>
+
+  <!-- ==============================================================================
+       MODALS (Accessible, Focus-Managed & Reusable)
+       ============================================================================== -->
+
+  <!-- 1. Add / Edit Medicine Modal -->
+  <div class="modal-backdrop" id="medModal" role="dialog" aria-modal="true" aria-labelledby="medModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="medModalTitle">Add Medicine</h3>
+        <button type="button" class="modal-close-btn" id="btnCloseMedModal" aria-label="Close dialog">✕</button>
+      </div>
+
+      <form id="medForm" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="medEditId">
+
+          <div class="form-group">
+            <label for="medName" class="form-label">
+              Medicine Name <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="medName" 
+              class="form-input" 
+              placeholder="e.g., Amlodipine, Metformin, Vitamin D" 
+              required
+            >
+            <p class="form-error-msg" id="medNameError">Please enter the medicine name.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="medDosage" class="form-label">
+              Dosage or Strength <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="medDosage" 
+              class="form-input" 
+              placeholder="e.g., 5mg, 500mg, 1 tablet" 
+              required
+            >
+            <p class="form-error-msg" id="medDosageError">Please enter the dosage or strength.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="medTimeOfDay" class="form-label">
+              Time of Day <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="medTimeOfDay" class="form-select" required>
+              <option value="Morning">Morning</option>
+              <option value="Afternoon">Afternoon</option>
+              <option value="Night">Night</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="medTime" class="form-label">
+              Scheduled Time <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="time" 
+              id="medTime" 
+              class="form-input" 
+              value="08:00" 
+              required
+            >
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="medStartDate" class="form-label">
+                Start date (optional)
+              </label>
+              <input 
+                type="date" 
+                id="medStartDate" 
+                class="form-input"
+              >
+              <p class="form-hint">Course start date.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="medEndDate" class="form-label">
+                End date (optional)
+              </label>
+              <input 
+                type="date" 
+                id="medEndDate" 
+                class="form-input"
+              >
+              <p class="form-hint">Leave blank for ongoing.</p>
+              <p class="form-error-msg" id="medEndDateError">End date cannot be earlier than start date.</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="medNotes" class="form-label">
+              Instructions or Notes (Optional)
+            </label>
+            <textarea 
+              id="medNotes" 
+              class="form-textarea" 
+              placeholder="e.g., Take with a full glass of water after breakfast."
+            ></textarea>
+            <p class="form-hint">Add any doctor recommendations or food instructions.</p>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelMed">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveMed">Save Medicine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Duplicate Medicine Warning & Confirmation Modal -->
+  <div class="modal-backdrop" id="duplicateMedModal" role="dialog" aria-modal="true" aria-labelledby="duplicateMedModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="duplicateMedModalTitle">⚠️ Medicine Already in List</h3>
+        <button type="button" class="modal-close-btn" id="btnCloseDuplicateMedModal" aria-label="Close dialog">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size: var(--font-size-md); font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">
+          This medicine is already in your list.
+        </p>
+        <p style="font-size: var(--font-size-sm); color: var(--color-text-body); margin-bottom: 16px;">
+          We found an existing prescription with this name in your personal account:
+        </p>
+
+        <!-- Existing Medicine Summary Box -->
+        <div class="existing-med-box">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <strong style="font-size: var(--font-size-base); color: var(--color-text-main);" id="dupMedExistingName">Medicine Name</strong>
+            <span style="font-size: var(--font-size-sm); font-weight: 700; color: var(--color-teal-dark);" id="dupMedExistingDosage">500mg</span>
+          </div>
+          <div style="font-size: var(--font-size-sm); color: var(--color-text-muted);" id="dupMedExistingSchedule">
+            Schedule: Morning (08:00 AM)
+          </div>
+        </div>
+
+        <p style="font-size: var(--font-size-base); font-weight: 600; color: var(--color-text-main);">
+          Would you like to add it again?
+        </p>
+        <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
+          If you take different dosages or maintain separate morning and night schedules, you may add it anyway. Otherwise, cancel to return to the form or edit your existing entry.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelDuplicateMed">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmDuplicateMed">Add Anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Add / Edit Health Record Modal -->
+  <div class="modal-backdrop" id="recordModal" role="dialog" aria-modal="true" aria-labelledby="recordModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="recordModalTitle">Add Health Record</h3>
+        <button type="button" class="modal-close-btn" id="btnCloseRecordModal" aria-label="Close dialog">✕</button>
+      </div>
+
+      <form id="recordForm" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="recordEditId">
+
+          <div class="form-group">
+            <label for="recordTitle" class="form-label">
+              Record Title <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="recordTitle" 
+              class="form-input" 
+              placeholder="e.g., Blood Pressure Check, Annual Physical, Eye Exam" 
+              required
+            >
+            <p class="form-error-msg" id="recordTitleError">Please enter a title for this record.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="recordCategory" class="form-label">
+              Category <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="recordCategory" class="form-select" required>
+              <option value="Doctor Visit">Doctor Visit</option>
+              <option value="Vitals & BP">Vitals & BP</option>
+              <option value="Lab Results">Lab Results</option>
+              <option value="General Notes">General Notes</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="recordDate" class="form-label">
+              Date <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="date" 
+              id="recordDate" 
+              class="form-input" 
+              required
+            >
+            <p class="form-error-msg" id="recordDateError">Please select a date.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="recordNotes" class="form-label">
+              Details or Doctor's Advice <span class="required" aria-hidden="true">*</span>
+            </label>
+            <textarea 
+              id="recordNotes" 
+              class="form-textarea" 
+              placeholder="e.g., Blood pressure was 120/80 mmHg. Doctor recommended continuing daily 20-minute morning walks."
+              required
+            ></textarea>
+            <p class="form-error-msg" id="recordNotesError">Please enter details or notes.</p>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelRecord">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveRecord">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Upload / Edit Medical Report Modal -->
+  <div class="modal-backdrop" id="reportModal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="reportModalTitle">Upload Medical Document</h3>
+        <button type="button" class="modal-close-btn" id="btnCloseReportModal" aria-label="Close dialog">✕</button>
+      </div>
+
+      <form id="reportForm" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="reportEditId">
+
+          <div class="form-group">
+            <label for="reportTitle" class="form-label">
+              Document Title <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reportTitle" 
+              class="form-input" 
+              placeholder="e.g., Complete Blood Count, Chest X-Ray, Cardiology Prescription" 
+              required
+            >
+            <p class="form-error-msg" id="reportTitleError">Please enter a document title.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="reportCategory" class="form-label">
+              Category <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="reportCategory" class="form-select" required>
+              <option value="Lab Report">Lab Report</option>
+              <option value="Prescription">Prescription</option>
+              <option value="Scan / X-Ray">Scan / X-Ray</option>
+              <option value="Discharge Summary">Discharge Summary</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reportDate" class="form-label">
+              Report Date <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="date" 
+              id="reportDate" 
+              class="form-input" 
+              required
+            >
+            <p class="form-error-msg" id="reportDateError">Please select the report date.</p>
+          </div>
+
+          <div class="form-group" id="reportFileGroup">
+            <label for="reportFileInput" class="form-label">
+              Select Document File <span class="required" id="reportFileRequiredMark" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="file" 
+              id="reportFileInput" 
+              class="form-input file-input" 
+              accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+              required
+            >
+            <p class="form-hint" id="reportFileHint">
+              Supported formats: PDF, JPG, PNG (Max 10 MB). Stored privately with encrypted user-ownership.
+            </p>
+            <p class="form-error-msg" id="reportFileError">Please select a valid document file (PDF, JPG, or PNG).</p>
+          </div>
+
+          <div class="form-group">
+            <label for="reportNotes" class="form-label">
+              Notes or Summary (Optional)
+            </label>
+            <textarea 
+              id="reportNotes" 
+              class="form-textarea" 
+              placeholder="e.g., Doctor advised normal lipid panel. Recommended follow-up in 6 months."
+            ></textarea>
+            <p class="form-hint">Add key findings or instructions from your doctor.</p>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelReport">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveReport">Upload Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Schedule / Edit Doctor Visit Modal -->
+  <div class="modal-backdrop" id="visitModal" role="dialog" aria-modal="true" aria-labelledby="visitModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="visitModalTitle">Schedule Doctor Visit</h3>
+        <button type="button" class="modal-close-btn" id="btnCloseVisitModal" aria-label="Close dialog">✕</button>
+      </div>
+
+      <form id="visitForm" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="visitEditId">
+
+          <div class="form-group">
+            <label for="visitDoctorName" class="form-label">
+              Doctor Name <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="visitDoctorName" 
+              class="form-input" 
+              placeholder="e.g., Dr. Anjali Sharma" 
+              required
+            >
+            <p class="form-error-msg" id="visitDoctorNameError">Please enter the doctor's name.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="visitSpecialty" class="form-label">
+              Specialty / Department (Optional)
+            </label>
+            <input 
+              type="text" 
+              id="visitSpecialty" 
+              class="form-input" 
+              placeholder="e.g., Cardiologist, General Physician, Neurologist"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="visitClinic" class="form-label">
+              Clinic or Hospital (Optional)
+            </label>
+            <input 
+              type="text" 
+              id="visitClinic" 
+              class="form-input" 
+              placeholder="e.g., City Care Hospital, 3rd Floor"
+            >
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="visitDate" class="form-label">
+                Appointment Date <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input 
+                type="date" 
+                id="visitDate" 
+                class="form-input" 
+                required
+              >
+              <p class="form-error-msg" id="visitDateError">Please select an appointment date.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="visitTime" class="form-label">
+                Appointment Time <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input 
+                type="time" 
+                id="visitTime" 
+                class="form-input" 
+                value="10:00"
+                required
+              >
+              <p class="form-error-msg" id="visitTimeError">Please select an appointment time.</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="visitReason" class="form-label">
+              Reason for Visit (Optional)
+            </label>
+            <input 
+              type="text" 
+              id="visitReason" 
+              class="form-input" 
+              placeholder="e.g., Routine blood pressure follow-up, Prescription renewal"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="visitContact" class="form-label">
+              Clinic Contact Number (Optional)
+            </label>
+            <input 
+              type="tel" 
+              id="visitContact" 
+              class="form-input" 
+              placeholder="e.g., +91 98765 43210"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="visitStatus" class="form-label">
+              Visit Status <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="visitStatus" class="form-select" required>
+              <option value="Upcoming">Upcoming</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="visitNotes" class="form-label">
+              Doctor's Advice or Preparation Notes (Optional)
+            </label>
+            <textarea 
+              id="visitNotes" 
+              class="form-textarea" 
+              placeholder="e.g., Bring recent blood report. Fast for 8 hours prior to morning visit."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelVisit">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveVisit">Save Visit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Confirm Delete Modal -->
+  <div class="modal-backdrop" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="deleteModalTitle">Confirm Removal</h3>
+        <button type="button" class="modal-close-btn" id="btnCloseDeleteModal" aria-label="Close dialog">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size: var(--font-size-base); color: var(--color-text-main); margin-bottom: 12px;" id="deleteConfirmPrompt">
+          Are you sure you want to remove this entry?
+        </p>
+        <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+          This record will be permanently deleted from your private account in the database.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelDelete">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmDelete">Yes, Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Real Sign In / Create Account Authentication Modal -->
+  <div class="modal-backdrop" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="authModalTitle">Patient Sign In</h3>
+          <p class="modal-subtitle" id="authModalSubtitle" style="margin: 4px 0 0; font-size: var(--font-size-xs); color: var(--color-text-muted);">
+            Sign in to access your medicine schedule and health records.
+          </p>
+        </div>
+        <button type="button" class="modal-close-btn" id="btnCloseAuthModal" aria-label="Close dialog">✕</button>
+      </div>
+
+      <form id="authForm" novalidate>
+        <div class="modal-body">
+
+          <!-- Global Form Error Alert -->
+          <div id="authGlobalError" class="form-error-msg" style="padding: 12px; background-color: var(--color-danger-bg); border: 1px solid var(--color-danger-border); border-radius: var(--radius-sm); margin-bottom: 16px; font-size: var(--font-size-sm);"></div>
+
+          <!-- Name Field (Register only) -->
+          <div class="form-group" id="authNameGroup" style="display: none;">
+            <label for="authName" class="form-label">
+              Full Name <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="authName" 
+              class="form-input" 
+              placeholder="e.g., Sarah Jenkins"
+              autocomplete="name"
+            >
+            <p class="form-error-msg" id="authNameError">Please enter your full name.</p>
+          </div>
+
+          <!-- Account Role Field (Register only) -->
+          <div class="form-group" id="authRoleGroup" style="display: none;">
+            <label for="authRole" class="form-label">
+              I am registering as <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="authRole" class="form-select" style="cursor: pointer;">
+              <option value="patient" selected>Patient (Managing my own health & medicines)</option>
+              <option value="caregiver">Caregiver — Assisting a family member or patient</option>
+            </select>
+            <p class="form-hint" id="authRoleHint">Choose whether this account is for yourself or to support another patient.</p>
+          </div>
+
+          <!-- Email Field -->
+          <div class="form-group">
+            <label for="authEmail" class="form-label">
+              Email Address <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="authEmail" 
+              class="form-input" 
+              placeholder="e.g., patient@example.com"
+              autocomplete="email" 
+              required
+            >
+            <p class="form-error-msg" id="authEmailError">Please enter a valid email address.</p>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="authPassword" class="form-label">
+              Password <span class="required" aria-hidden="true">*</span>
+            </label>
+            <div style="position: relative;">
+              <input 
+                type="password" 
+                id="authPassword" 
+                class="form-input" 
+                placeholder="••••••••"
+                autocomplete="current-password" 
+                required
+              >
+              <button 
+                type="button" 
+                id="btnTogglePassword" 
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--color-text-muted);"
+                aria-label="Toggle password visibility"
+              >
+                👁️
+              </button>
+            </div>
+            <p class="form-hint" id="authPasswordHint">Password must be at least 6 characters.</p>
+            <p class="form-error-msg" id="authPasswordError">Please enter your password.</p>
+          </div>
+
+          <!-- Confirm Password Field (Register only) -->
+          <div class="form-group" id="authConfirmPasswordGroup" style="display: none;">
+            <label for="authConfirmPassword" class="form-label">
+              Confirm Password <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="password" 
+              id="authConfirmPassword" 
+              class="form-input" 
+              placeholder="••••••••"
+              autocomplete="new-password"
+            >
+            <p class="form-error-msg" id="authConfirmPasswordError">Passwords must match.</p>
+          </div>
+
+          <!-- Mode Switch Button -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnSwitchAuthMode" style="border: none; background: transparent; color: var(--color-teal-dark); text-decoration: underline; padding: 0;">
+              Need an account? Create one
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnDismissAuth">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitAuth">Sign In</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. Real Background Push & Notification Diagnostics Modal -->
+  <div class="modal-backdrop" id="diagnosticsModal" role="dialog" aria-modal="true" aria-labelledby="diagnosticsModalTitle">
+    <div class="modal-window" style="max-width: min(720px, calc(100vw - 24px));">
+      <div class="modal-header">
+        <h3 class="modal-title" id="diagnosticsModalTitle">Notification System Diagnostics</h3>
+        <button type="button" class="modal-close-btn" id="btnCloseDiagnosticsModal" aria-label="Close dialog">✕</button>
+      </div>
+
+      <div class="modal-body" id="diagnosticsModalBody">
+        <div id="diagnosticsLoading" style="text-align: center; padding: 24px; color: var(--color-text-muted);">
+          <span>Inspecting service worker, VAPID keys, push registrations, and server scheduler...</span>
+        </div>
+
+        <div id="diagnosticsContent" style="display: none;">
+          <!-- Diagnostics rendered dynamically via JavaScript -->
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnTriggerSchedulerNow">
+          ⚡ Run Scheduler Once
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary" id="btnRefreshDiagnostics">Refresh</button>
+          <button type="button" class="btn btn-primary" id="btnDismissDiagnostics">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Center Drawer & Backdrop -->
+  <div class="drawer-backdrop" id="notifDrawerBackdrop" aria-hidden="true"></div>
+  <aside class="notif-drawer" id="notificationsDrawer" role="dialog" aria-modal="true" aria-labelledby="notifDrawerTitle" aria-hidden="true">
+    <div class="notif-drawer-header">
+      <div class="notif-drawer-title-wrap">
+        <span class="notif-drawer-icon" aria-hidden="true">
+          <svg class="icon-svg bell-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </span>
+        <div>
+          <h2 class="notif-drawer-title" id="notifDrawerTitle">Medicine Reminders</h2>
+          <p class="notif-drawer-sub" id="notifDrawerSub">Today's scheduled doses & alerts</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" id="btnCloseNotifDrawer" aria-label="Close notification center">✕</button>
+    </div>
+
+    <!-- Browser Permission Banner (if promptable) -->
+    <div class="notif-browser-banner" id="notifBrowserBanner" style="display: none;">
+      <div class="notif-browser-banner-text">
+        <strong>Enable Desktop Reminders</strong>
+        <p>Get timely on-screen alerts when it's time to take your medicine.</p>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnEnableBrowserNotifs">Turn On</button>
+    </div>
+
+    <div class="notif-drawer-actions-bar">
+      <span class="notif-count-badge" id="notifDrawerCount">0 active reminders</span>
+      <button type="button" class="btn btn-text btn-sm" id="btnClearDismissedNotifs" style="color: var(--color-text-muted); font-size: var(--font-size-xs);">
+        Clear Dismissed
+      </button>
+    </div>
+
+    <div class="notif-drawer-list" id="notifDrawerList" aria-live="polite">
+      <!-- Dynamically rendered -->
+    </div>
+
+    <div class="notif-drawer-footer">
+      <a href="/schedule" data-route="/schedule" class="btn btn-secondary btn-block" id="btnDrawerGoSchedule">
+        View Full Today's Schedule →
+      </a>
+    </div>
+  </aside>
+
+  <!-- Toast Notification Container (Live Region for Screen Readers) -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+
+  <!-- Client-side Vanilla JavaScript -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
