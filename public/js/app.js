@@ -345,18 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Wire all landing page sign-in and sign-up trigger buttons
+   * Wire landing page top navigation sign-in and sign-up trigger buttons
    */
   function wireAuthTriggerButtons() {
     const btnNavSignIn = document.getElementById('btnNavSignIn');
     const btnNavSignUp = document.getElementById('btnNavSignUp');
-    const btnHeroSignIn = document.getElementById('btnHeroSignIn');
-    const btnHeroSignUp = document.getElementById('btnHeroSignUp');
 
     if (btnNavSignIn) btnNavSignIn.onclick = () => { closeMobileMenu(); openAuthModal(false); };
     if (btnNavSignUp) btnNavSignUp.onclick = () => { closeMobileMenu(); openAuthModal(true); };
-    if (btnHeroSignIn) btnHeroSignIn.onclick = () => { closeMobileMenu(); openAuthModal(false); };
-    if (btnHeroSignUp) btnHeroSignUp.onclick = () => { closeMobileMenu(); openAuthModal(true); };
   }
 
   /**
@@ -538,6 +534,11 @@ document.addEventListener('DOMContentLoaded', () => {
    * Render Patient Dashboard Overview
    */
   function renderDashboard() {
+    if (currentUser && currentUser.role === 'caregiver') {
+      navigateTo('/caregiver', false);
+      return;
+    }
+
     const dashPatientName = document.getElementById('dashPatientName');
     if (dashPatientName && currentUser) {
       dashPatientName.textContent = currentUser.name || 'Patient';

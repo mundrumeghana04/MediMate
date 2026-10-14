@@ -36,7 +36,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ['patient', 'caregiver'],
-      default: 'patient'
+      trim: true,
+      lowercase: true
     },
     profilePicture: {
       type: String, // Stored filename in uploads/profiles

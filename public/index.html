@@ -241,17 +241,11 @@
           <p class="hero-subtitle">
             Keep track of your medicines and health information in one simple place. Designed with larger text, clear buttons, and easy navigation for patients and family caregivers.
           </p>
-          <div class="hero-button-group">
-            <button type="button" class="btn btn-primary" id="btnHeroSignUp">
-              ✨ Create Free Account
-            </button>
-            <button type="button" class="btn btn-secondary" id="btnHeroSignIn">
-              🔑 Sign In to Your Records
-            </button>
+          <div class="hero-access-hint" style="margin-top: 24px; padding: 14px 18px; background: rgba(2, 132, 199, 0.06); border: 1px solid rgba(2, 132, 199, 0.16); border-radius: var(--radius-md); max-width: 500px;">
+            <p style="font-size: var(--font-size-sm); color: var(--color-text-main); margin: 0; line-height: 1.5; font-weight: 500;">
+              ✨ <strong>Ready to begin?</strong> Use the <strong>Sign In</strong> or <strong>Create Account</strong> buttons at the top of the page to access your secure patient or caregiver records.
+            </p>
           </div>
-          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 14px; margin-bottom: 0;">
-            Patients and caregivers can sign in here through one unified portal.
-          </p>
         </div>
 
         <div class="hero-visual-card">
@@ -335,7 +329,7 @@
     <div id="authenticatedView" style="display: none;">
 
       <!-- A. Dedicated Page View: Dashboard Overview (/dashboard) -->
-      <section class="page-view" id="viewDashboard" role="region" aria-label="Dashboard Overview Page">
+      <section class="page-view" id="viewDashboard" style="display: none;" role="region" aria-label="Dashboard Overview Page">
         <div class="page-header">
           <div class="page-header-text">
             <div class="page-badge"><span>📊 Overview</span></div>

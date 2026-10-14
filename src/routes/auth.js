@@ -23,8 +23,10 @@ function sendTokenCookie(res, user) {
     throw new Error('JWT_SECRET is not configured on the server.');
   }
 
+  const normalizedRole = (user.role ? String(user.role).trim().toLowerCase() : '') || 'patient';
+
   const token = jwt.sign(
-    { id: user._id, email: user.email },
+    { id: user._id, email: user.email, role: normalizedRole },
     secret,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
