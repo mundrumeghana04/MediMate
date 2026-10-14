@@ -1,223 +1,327 @@
+
 /**
- * ==============================================================================
- * MediMate - Medical Reports & Document Routes (/api/medical-reports)
- * ==============================================================================
- * Secure private upload, download, metadata management, and deletion.
- * All files are stored privately outside public static directories and are
- * protected by strict ownership verification.
- * ==============================================================================
+ * MediMate - Secure Medical Reports API
+ * Cloudinary authenticated storage with ownership-checked access.
  */
 
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
+const cloudinary = require('cloudinary').v2;
 
 const MedicalReport = require('../models/MedicalReport');
 const { requireAuth } = require('../middleware/auth');
 
-// Protect all medical report routes with authentication
 router.use(requireAuth);
 
-// Ensure private upload directory exists outside of public/
-const UPLOADS_DIR = path.join(__dirname, '../../uploads/medical-reports');
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-
-// ------------------------------------------------------------------------------
-// Multer Storage Configuration
-// ------------------------------------------------------------------------------
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOADS_DIR);
-  },
-  filename: (req, file, cb) => {
-    // Generate safe, collision-resistant unique filename
-    const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(8).toString('hex');
-    const safeExt = path.extname(file.originalname).toLowerCase();
-    cb(null, `report-${uniqueSuffix}${safeExt}`);
-  }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// File validation: Only PDF, JPG/JPEG, PNG allowed; max 10MB
-const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
-
-const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname).toLowerCase();
-  const mime = file.mimetype.toLowerCase();
-
-  if (!ALLOWED_EXTENSIONS.includes(ext) || !ALLOWED_MIME_TYPES.includes(mime)) {
-    return cb(new Error('Unsupported file type. Only PDF, JPG, and PNG documents are allowed.'), false);
-  }
-
-  cb(null, true);
-};
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png'
+]);
+const ALLOWED_EXTENSIONS = new Set(['.pdf', '.jpg', '.jpeg', '.png']);
+const VALID_CATEGORIES = [
+  'Lab Report',
+  'Prescription',
+  'Scan / X-Ray',
+  'Discharge Summary',
+  'Other'
+];
 
 const upload = multer({
-  storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10 MB maximum
-  },
-  fileFilter
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter(req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mime = file.mimetype.toLowerCase();
+
+    if (!ALLOWED_EXTENSIONS.has(ext) || !ALLOWED_MIME_TYPES.has(mime)) {
+      return cb(
+        new Error('Only PDF, JPG, JPEG, and PNG documents are allowed.')
+      );
+    }
+
+    cb(null, true);
+  }
 });
 
-// ------------------------------------------------------------------------------
+function uploadToCloudinary(buffer, publicId, format) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'image',
+        type: 'authenticated',
+        public_id: publicId,
+        format,
+        overwrite: false,
+        unique_filename: false,
+        use_filename: false
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    stream.end(buffer);
+  });
+}
+
+async function destroyCloudinaryAsset(publicId) {
+  return cloudinary.uploader.destroy(publicId, {
+    resource_type: 'image',
+    type: 'authenticated',
+    invalidate: true
+  });
+}
+
 // GET /api/medical-reports
-// ------------------------------------------------------------------------------
-// List all medical reports belonging to the authenticated patient
 router.get('/', async (req, res) => {
   try {
-    const reports = await MedicalReport.find({ user: req.user._id }).sort({ reportDate: -1, createdAt: -1 });
+    const reports = await MedicalReport.find({
+      user: req.user._id
+    }).sort({ reportDate: -1, createdAt: -1 });
+
     return res.status(200).json({ reports });
   } catch (error) {
     console.error('[Get Reports Error]', error.message);
-    return res.status(500).json({ error: 'Failed to retrieve your medical documents.' });
+    return res.status(500).json({
+      error: 'Failed to retrieve your medical documents.'
+    });
   }
 });
 
-// ------------------------------------------------------------------------------
 // POST /api/medical-reports
-// ------------------------------------------------------------------------------
-// Upload a new medical document with metadata
 router.post('/', (req, res) => {
-  upload.single('document')(req, res, async (err) => {
-    if (err instanceof multer.MulterError) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ error: 'File size exceeds the 10 MB limit. Please select a smaller file.' });
-      }
-      return res.status(400).json({ error: `Upload error: ${err.message}` });
-    } else if (err) {
-      return res.status(400).json({ error: err.message });
+  upload.single('document')(req, res, async (uploadError) => {
+    if (uploadError) {
+      const isSizeError = uploadError instanceof multer.MulterError &&
+        uploadError.code === 'LIMIT_FILE_SIZE';
+
+      return res.status(400).json({
+        error: isSizeError
+          ? 'File size exceeds the 10 MB limit.'
+          : uploadError.message
+      });
     }
 
     if (!req.file) {
-      return res.status(400).json({ error: 'Please select a document file to upload (PDF, JPG, or PNG).' });
+      return res.status(400).json({
+        error: 'Please select a PDF, JPG, or PNG document.'
+      });
     }
+
+    let uploadedPublicId;
 
     try {
       const { title, category, reportDate, notes } = req.body;
 
-      if (!title || typeof title !== 'string' || !title.trim()) {
-        // Clean up uploaded file if validation fails
-        if (req.file.path && fs.existsSync(req.file.path)) {
-          fs.unlinkSync(req.file.path);
-        }
-        return res.status(400).json({ error: 'Please provide a title for this medical document.' });
+      if (
+        typeof title !== 'string' ||
+        !title.trim() ||
+        title.trim().length > 120
+      ) {
+        return res.status(400).json({
+          error: 'Please provide a document title of up to 120 characters.'
+        });
       }
 
-      const validCategories = ['Lab Report', 'Prescription', 'Scan / X-Ray', 'Discharge Summary', 'Other'];
-      const selectedCategory = validCategories.includes(category) ? category : 'Lab Report';
+      if (typeof notes === 'string' && notes.length > 1000) {
+        return res.status(400).json({
+          error: 'Notes cannot exceed 1000 characters.'
+        });
+      }
 
-      // Sanitize original filename
-      const safeOriginalFilename = path.basename(req.file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+      if (
+        reportDate &&
+        !/^\d{4}-\d{2}-\d{2}$/.test(reportDate)
+      ) {
+        return res.status(400).json({
+          error: 'Please provide a valid report date in YYYY-MM-DD format.'
+        });
+      }
 
-      const newReport = new MedicalReport({
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const publicId =
+        `medimate/${req.user._id}/${crypto.randomUUID()}`;
+
+      const result = await uploadToCloudinary(
+        req.file.buffer,
+        publicId,
+        ext.slice(1)
+      );
+
+      uploadedPublicId = result.public_id;
+
+      const safeOriginalFilename = path
+        .basename(req.file.originalname)
+        .replace(/[^a-zA-Z0-9._-]/g, '_');
+
+      const report = new MedicalReport({
         user: req.user._id,
         title: title.trim(),
-        category: selectedCategory,
-        reportDate: reportDate ? reportDate.trim() : new Date().toISOString().split('T')[0],
+        category: VALID_CATEGORIES.includes(category)
+          ? category
+          : 'Lab Report',
+        reportDate: reportDate || new Date().toISOString().slice(0, 10),
         notes: typeof notes === 'string' ? notes.trim() : '',
         originalFilename: safeOriginalFilename,
-        filename: req.file.filename,
+        filename: result.public_id,
         mimeType: req.file.mimetype,
         size: req.file.size,
-        storageProvider: 'local_private',
-        storagePath: req.file.path
+        storageProvider: 'cloudinary',
+        storagePath: result.public_id
       });
 
-      await newReport.save();
+      await report.save();
 
       return res.status(201).json({
         message: 'Medical report uploaded successfully.',
-        report: newReport
+        report
       });
-    } catch (dbErr) {
-      console.error('[Save Report Error]', dbErr.message);
-      // Clean up orphaned file on database error
-      if (req.file.path && fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
+    } catch (error) {
+      console.error('[Save Report Error]', error.message);
+
+      if (uploadedPublicId) {
+        try {
+          await destroyCloudinaryAsset(uploadedPublicId);
+        } catch (cleanupError) {
+          console.error(
+            '[Cloudinary Cleanup Error]',
+            cleanupError.message
+          );
+        }
       }
-      return res.status(500).json({ error: 'Failed to save medical report metadata.' });
+
+      return res.status(500).json({
+        error: 'Failed to securely store the medical document.'
+      });
     }
   });
 });
 
-// ------------------------------------------------------------------------------
 // GET /api/medical-reports/:id/file
-// ------------------------------------------------------------------------------
-// Securely view or download document with authoritative ownership check
 router.get('/:id/file', async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid document identifier.' });
+      return res.status(400).json({
+        error: 'Invalid document identifier.'
+      });
     }
 
-    // Strictly enforce that document belongs to authenticated user
-    const report = await MedicalReport.findOne({ _id: id, user: req.user._id });
+    const report = await MedicalReport.findOne({
+      _id: id,
+      user: req.user._id
+    });
+
     if (!report) {
-      return res.status(404).json({ error: 'Document not found or access denied.' });
+      return res.status(404).json({
+        error: 'Document not found or access denied.'
+      });
     }
 
-    const filePath = path.resolve(report.storagePath);
-
-    // Prevent directory traversal attacks
-    if (!filePath.startsWith(path.resolve(UPLOADS_DIR))) {
-      return res.status(403).json({ error: 'Access denied: invalid file path.' });
+    if (report.storageProvider !== 'cloudinary') {
+      return res.status(404).json({
+        error: 'This document is not available in cloud storage.'
+      });
     }
 
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'Document file not found on private storage.' });
-    }
+    // Generate a short-lived authenticated download URL only after
+    // verifying that the requesting user owns this report.
+    const ext = path.extname(report.originalFilename).slice(1).toLowerCase();
+    const expiresAt = Math.floor(Date.now() / 1000) + 5 * 60;
 
-    res.setHeader('Content-Type', report.mimeType);
-    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(report.originalFilename)}"`);
+    const downloadUrl = cloudinary.utils.private_download_url(
+      report.storagePath,
+      ext,
+      {
+        resource_type: 'image',
+        type: 'authenticated',
+        expires_at: expiresAt,
+        attachment: true
+      }
+    );
+
+    res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
-    return res.sendFile(filePath);
+    return res.redirect(302, downloadUrl);
   } catch (error) {
     console.error('[Download Report Error]', error.message);
-    return res.status(500).json({ error: 'Failed to access document.' });
+    return res.status(500).json({
+      error: 'Failed to access document.'
+    });
   }
 });
 
-// ------------------------------------------------------------------------------
 // PUT /api/medical-reports/:id
-// ------------------------------------------------------------------------------
-// Update medical document metadata
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid document identifier.' });
+      return res.status(400).json({
+        error: 'Invalid document identifier.'
+      });
     }
 
     const { title, category, reportDate, notes } = req.body;
 
-    if (!title || !title.trim()) {
-      return res.status(400).json({ error: 'Document title is required.' });
+    if (
+      typeof title !== 'string' ||
+      !title.trim() ||
+      title.trim().length > 120
+    ) {
+      return res.status(400).json({
+        error: 'Document title is required and must be at most 120 characters.'
+      });
     }
 
-    const report = await MedicalReport.findOne({ _id: id, user: req.user._id });
+    if (typeof notes === 'string' && notes.length > 1000) {
+      return res.status(400).json({
+        error: 'Notes cannot exceed 1000 characters.'
+      });
+    }
+
+    if (
+      reportDate &&
+      !/^\d{4}-\d{2}-\d{2}$/.test(reportDate)
+    ) {
+      return res.status(400).json({
+        error: 'Please provide a valid report date in YYYY-MM-DD format.'
+      });
+    }
+
+    const report = await MedicalReport.findOne({
+      _id: id,
+      user: req.user._id
+    });
+
     if (!report) {
-      return res.status(404).json({ error: 'Document not found or access denied.' });
+      return res.status(404).json({
+        error: 'Document not found or access denied.'
+      });
     }
 
     report.title = title.trim();
 
-    const validCategories = ['Lab Report', 'Prescription', 'Scan / X-Ray', 'Discharge Summary', 'Other'];
-    if (validCategories.includes(category)) {
+    if (VALID_CATEGORIES.includes(category)) {
       report.category = category;
     }
 
-    if (reportDate) report.reportDate = reportDate.trim();
+    if (reportDate) report.reportDate = reportDate;
     if (typeof notes === 'string') report.notes = notes.trim();
 
     await report.save();
@@ -228,43 +332,61 @@ router.put('/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('[Update Report Error]', error.message);
-    return res.status(500).json({ error: 'Failed to update document metadata.' });
+    return res.status(500).json({
+      error: 'Failed to update document metadata.'
+    });
   }
 });
 
-// ------------------------------------------------------------------------------
 // DELETE /api/medical-reports/:id
-// ------------------------------------------------------------------------------
-// Permanently remove document and stored file from private storage
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid document identifier.' });
+      return res.status(400).json({
+        error: 'Invalid document identifier.'
+      });
     }
 
-    const report = await MedicalReport.findOne({ _id: id, user: req.user._id });
+    const report = await MedicalReport.findOne({
+      _id: id,
+      user: req.user._id
+    });
+
     if (!report) {
-      return res.status(404).json({ error: 'Document not found or access denied.' });
+      return res.status(404).json({
+        error: 'Document not found or access denied.'
+      });
     }
 
-    // Delete stored private file if exists
-    if (report.storagePath && fs.existsSync(report.storagePath)) {
-      try {
-        fs.unlinkSync(report.storagePath);
-      } catch (fsErr) {
-        console.warn('[Warning] Could not remove file from disk:', fsErr.message);
+    if (report.storageProvider === 'cloudinary') {
+      const result = await destroyCloudinaryAsset(report.storagePath);
+
+      if (result.result !== 'ok' && result.result !== 'not found') {
+        return res.status(502).json({
+          error: 'Could not remove the document from secure storage.'
+        });
       }
+    } else {
+      return res.status(409).json({
+        error: 'This report uses local storage and requires migration.'
+      });
     }
 
-    // Delete database document
-    await MedicalReport.deleteOne({ _id: id });
+    await MedicalReport.deleteOne({
+      _id: report._id,
+      user: req.user._id
+    });
 
-    return res.status(200).json({ message: 'Medical document removed successfully.' });
+    return res.status(200).json({
+      message: 'Medical document removed successfully.'
+    });
   } catch (error) {
     console.error('[Delete Report Error]', error.message);
-    return res.status(500).json({ error: 'Failed to delete medical document.' });
+    return res.status(500).json({
+      error: 'Failed to delete medical document.'
+    });
   }
 });
 
